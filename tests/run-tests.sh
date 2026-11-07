@@ -75,6 +75,21 @@ make_azimuth "$WORK/m"
 out=$("${CLI[@]}" import --source "$WORK/xbox.zip" --target "$WORK/m" --dry-run)
 [[ $(grep -c "already imported, identical" <<<"$out") -eq 3 ]] && pass "re-import detected as identical" || fail "identical detection"
 
+echo "import from the FH3 PC (wgs) folder"
+python3 -I "$PWD/tests/make_wgs.py" "$WORK/xbox" "$WORK/pc/wgs"
+make_azimuth "$WORK/w"
+out=$("${CLI[@]}" import --source "$WORK/pc" --target "$WORK/w" --dry-run 2>&1)
+[[ $out == *"Skipped 'NotSynced'"* ]] && pass "unsynced container reported" || fail "unsynced warning: $out"
+"${CLI[@]}" import --source "$WORK/pc" --target "$WORK/w" --mode replace --yes --backup-dir "$WORK/w-backups" >/dev/null \
+  && pass "exit code 0" || fail "exit code"
+"${REF[@]}" check "$WORK/xbox" "$WORK/w/$P" && pass "every container matches the Xbox bytes" || fail "containers"
+cp -r "$WORK/pc/wgs/000900000ABCDEF1_0000000000000000000000006E8F2F63" "$WORK/pc/wgs/000900000ABCDEF2_0000000000000000000000006E8F2F63"
+"${CLI[@]}" import --source "$WORK/pc" --target "$WORK/w" --dry-run >/dev/null 2>&1
+[[ $? -eq 1 ]] && pass "two Xbox accounts: asks to pick one" || fail "two accounts"
+rm -f "$WORK/pc/wgs/000900000ABCDEF1_0000000000000000000000006E8F2F63"/*/[0-9A-F]*[0-9A-F]
+"${CLI[@]}" import --source "$WORK/pc/wgs/000900000ABCDEF1_0000000000000000000000006E8F2F63" --target "$WORK/w" --dry-run >/dev/null 2>&1
+[[ $? -eq 1 ]] && pass "missing blob: refused" || fail "missing blob"
+
 echo "safety"
 make_azimuth "$WORK/s"
 "${CLI[@]}" import --source "$WORK/xbox" --target "$WORK/s" --yes >/dev/null 2>&1

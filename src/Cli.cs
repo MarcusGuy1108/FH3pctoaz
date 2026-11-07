@@ -12,7 +12,8 @@ namespace AzimuthSaveImporter
         const string Usage =
 @"Azimuth Save Importer {0}
 
-Imports Forza Horizon 2 saves downloaded from the Xbox cloud with XBsync into Azimuth.
+Imports Forza Horizon 3 PC (Microsoft Store) saves into Azimuth.
+Xbox saves downloaded with XBsync work too.
 Run without arguments to open the window.
 
 Usage:
@@ -20,7 +21,8 @@ Usage:
   AzimuthSaveImporter verify  --target <folder>
   AzimuthSaveImporter restore --backup <zip> --target <folder> [--yes]
 
-  --source <path>       Folder or ZIP downloaded with XBsync.
+  --source <path>       FH3 PC save folder (...\Packages\Microsoft.OpusPG_8wekyb3d8bbwe\SystemAppData\wgs),
+                        or a folder or ZIP downloaded with XBsync.
   --target <path>       Azimuth's folder, its saves folder or a saves\player-N folder.
   --player <name>       Player folder to use when there are several (for example player-1).
   --mode replace|merge  Required when Azimuth already has saves:

@@ -50,7 +50,7 @@ namespace AzimuthSaveImporter.Core
     /// extracted folder ("Download all") or as the ZIP ("Download ZIP"). Every container is a
     /// folder of flat files; the folder name is the container name.
     /// </summary>
-    public sealed class XboxSource : IDisposable
+    public sealed partial class XboxSource : IDisposable
     {
         public const string SavedGameSuffix = ",savedgame";
 
@@ -73,7 +73,7 @@ namespace AzimuthSaveImporter.Core
 
         public static XboxSource Open(string path)
         {
-            if (string.IsNullOrWhiteSpace(path)) throw new ImportException("Choose the folder or ZIP you downloaded with XBsync.");
+            if (string.IsNullOrWhiteSpace(path)) throw new ImportException("Choose the Forza Horizon 3 PC save folder (or a folder or ZIP downloaded with XBsync).");
             var source = new XboxSource(System.IO.Path.GetFullPath(path));
             if (File.Exists(path) && path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                 source.ReadZip();
@@ -84,7 +84,7 @@ namespace AzimuthSaveImporter.Core
 
             if (source.Containers.Count == 0)
                 throw new ImportException("No Xbox save containers were found in " + path +
-                    ". Choose the folder (or ZIP) XBsync created for Forza Horizon 2.");
+                    ". Choose the Forza Horizon 3 PC save folder: " + DefaultPcSaveFolder);
             source.Containers.Sort((a, b) => string.Compare(a.BaseName, b.BaseName, StringComparison.OrdinalIgnoreCase));
 
             var duplicates = source.Containers.GroupBy(c => c.BaseName, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1).ToList();
@@ -99,6 +99,12 @@ namespace AzimuthSaveImporter.Core
 
         void ReadFolder()
         {
+            var wgs = FindWgsUserFolders(Path);
+            if (wgs.Count > 1)
+                throw new ImportException("This PC has Forza Horizon 3 saves for more than one Xbox account. Choose one of these folders:\n  " +
+                    string.Join("\n  ", wgs));
+            if (wgs.Count == 1) { ReadWgs(wgs[0]); return; }
+
             var subfolders = Directory.GetDirectories(Path);
             if (subfolders.Any(d => Directory.Exists(System.IO.Path.Combine(d, SaveFormat.RevisionsFolder))))
                 throw new ImportException("This folder looks like an Azimuth save (it contains 'revisions' folders), not an Xbox download. " +

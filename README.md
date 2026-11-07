@@ -3,49 +3,50 @@
 > (an AI model by Anthropic) and reviewed and tested only as described below. Use it at your own
 > risk and keep backups of your saves.
 
-# Azimuth Save Importer
+# Azimuth Save Importer for Forza Horizon 3 (PC → Azimuth)
 
-Brings your **Forza Horizon 2 Xbox saves** into **Azimuth** on PC: your profile and progress,
-liveries, tuning setups, photos and garage thumbnails.
+Brings your **Forza Horizon 3 PC (Microsoft Store / Xbox app) saves** into **Azimuth**: your
+profile and progress, liveries, tuning setups, photos and garage thumbnails.
 
-It is the second half of a two-step move:
+This is a fork of [spenaat/azimuth-save-importer](https://github.com/spenaat/azimuth-save-importer)
+(the Forza Horizon 2 tool, MIT). The Azimuth side (commit manifests, format check, backups,
+rollback) is unchanged. What is new is a reader for the PC save folder.
 
-1. **[XBsync](https://github.com/d3fekt/xbsync)** downloads your saves from the Xbox cloud.
-2. **Azimuth Save Importer** converts that download into Azimuth's save format and puts it in place,
-   with a backup first.
+**Why this works:** FH3 is Xbox Play Anywhere, so the PC and Xbox One versions share one cloud save
+and the save files are byte for byte the same. Only the way they are stored on disk differs:
 
-Simply copying the Xbox files into Azimuth's save folder does not work (the game reports
-*"storage full"*): Azimuth keeps every save container in its own `revisions` folder with a
-`commit` manifest that lists the SHA-256 and size of each file. This tool writes exactly that.
+- **PC** keeps them in `%LOCALAPPDATA%\Packages\Microsoft.OpusPG_8wekyb3d8bbwe\SystemAppData\wgs`,
+  as GUID-named files listed by `containers.index` and `container.N` files.
+- **Azimuth** keeps every container in `<name>\revisions\<n>\data\` plus a `commit` manifest.
+
+The tool reads the first layout and writes the second. File contents are not changed.
 
 ## Download
 
-Get `AzimuthSaveImporter.exe` from [Releases](../../releases). It is a single file, nothing to install.
-Requires Windows 10 or 11 (it runs on the .NET Framework 4.8 that comes with Windows).
+Get `AzimuthSaveImporter.exe` from this repo's Releases (or the *Actions* build artifact).
+It is a single file, nothing to install. Requires Windows 10 or 11.
 
 ## How to use it
 
-1. **Download your saves with **[XBsync](https://github.com/d3fekt/xbsync)**.** Sign in, pick *Forza Horizon 2*, then use *Download all*
-   (a folder) or *Download ZIP*.
-2. **Start the game in Azimuth once, let it save, and close it.** The importer checks its output
-   against the saves Azimuth wrote itself before it changes anything (see *Safety*), so it needs
-   at least one.
+1. **Play FH3 on PC once** (Microsoft Store / Xbox app version), so your cloud save is synced to the
+   PC, and close it.
+2. **Start FH3 in Azimuth once, let it save, and close it.** The importer checks its output against
+   the saves Azimuth wrote itself before it changes anything, so it needs at least one.
 3. **Run `AzimuthSaveImporter.exe`.**
-   - *Xbox saves*: pick the XBsync folder or ZIP.
-   - *Azimuth saves*: pick the folder Azimuth is installed in. The save folder
-     (`data\titles\<title>\saves\player-1`) is found automatically.
+   - *FH3 PC saves*: filled in automatically when the default folder exists. Otherwise pick the
+     `wgs` folder above. If you have several Xbox accounts, pick the `<id>_<id>` folder of the one
+     you want.
+   - *Azimuth saves*: pick the folder Azimuth is installed in.
    - *Review* lists every item and what will happen to it.
-4. **Click _Import into Azimuth_.** If Azimuth already has saves, you choose:
-   - **Back up and replace everything** (recommended for a clean move from Xbox), or
-   - **Back up and merge**: replace only items with the same name and keep the rest.
-5. Start the game and check your profile, liveries and photos.
+4. **Click _Import into Azimuth_**, choose *replace* or *merge*, then start the game and check.
 
-Backups go to `Documents\Azimuth Save Importer\Backups` (you can change this). **Restore a backup...**
-puts any of them back, after backing up the current state first.
+Xbox saves downloaded with [XBsync](https://github.com/d3fekt/xbsync) still work as a source too.
+
+Backups go to `Documents\Azimuth Save Importer\Backups`. **Restore a backup...** puts any of them back.
 
 ## What it does
 
-| Xbox (XBsync download)                         | Azimuth                                                       |
+| FH3 PC save / XBsync download                  | Azimuth                                                       |
 | ---------------------------------------------- | ------------------------------------------------------------- |
 | `User_<XUID>,savedgame\*` (profile)            | `User_9000000000000\revisions\0000000000000001\data\*`, or the name of the profile Azimuth already has |
 | `Livery_0289_20150618180709,savedgame\*`       | `Livery_0289_20150618180709\revisions\0000000000000001\data\*` |
@@ -79,7 +80,11 @@ File contents are copied byte for byte; nothing inside the saves is modified.
 
 - The save format was worked out from saves Azimuth wrote, not from Azimuth's code. The format
   check above guards against changes, but treat this as a community tool and keep your backups.
-- Tested with Forza Horizon 2 only.
+- The FH3 PC reader was tested only against synthetic save folders built from the public description
+  of the format, not against a real FH3 PC save. The Azimuth writer was tested by its author with
+  Forza Horizon 2 only. Keep your backups, and please report what happens with FH3.
+- PC containers that are listed but not downloaded yet are skipped with a warning. A container with a
+  missing file is refused outright, so a half profile is never imported.
 - Liveries, tunes and photos keep the Xbox owner (your gamertag) in their headers; they are not
   rewritten. If an item does not show up in the game, that is the most likely reason. Please open
   an issue.
@@ -114,6 +119,8 @@ Pushing a tag such as `v1.0.0` builds the exe and attaches it to a GitHub releas
 
 ## Credits and license
 
+- Based on [azimuth-save-importer](https://github.com/spenaat/azimuth-save-importer) by spenaat (MIT).
+- PC save layout from [XGP-save-extractor](https://github.com/Z1ni/XGP-save-extractor) by Z1ni (MIT).
 - [XBsync](https://github.com/d3fekt/xbsync) by d3fekt does the Xbox download. It is a separate
   project (GPL-3.0); no code from it is included here.
 - Not affiliated with Microsoft, Xbox, Playground Games or the Azimuth project.

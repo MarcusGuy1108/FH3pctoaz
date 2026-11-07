@@ -71,13 +71,14 @@ namespace AzimuthSaveImporter.Gui
             _log.Font = new Font("Consolas", 8.5f);
             root.Controls.Add(_log);
 
-            _source.Text = _settings.Source;
+            _source.Text = string.IsNullOrEmpty(_settings.Source) && Directory.Exists(XboxSource.DefaultPcSaveFolder)
+                ? XboxSource.DefaultPcSaveFolder : _settings.Source;
             _target.Text = _settings.Target;
             UpdateBackupsLink();
             Shown += (s, e) =>
             {
                 RefreshPlayers(_settings.Player);
-                Log("Ready. 1) Pick the folder or ZIP you downloaded with XBsync. 2) Pick Azimuth's folder. 3) Review and import.");
+                Log("Ready. 1) Pick the Forza Horizon 3 PC save folder. 2) Pick Azimuth's folder. 3) Review and import.");
             };
             FormClosed += (s, e) =>
             {
@@ -101,7 +102,7 @@ namespace AzimuthSaveImporter.Gui
             };
             var subtitle = new Label
             {
-                Text = "Brings your Forza Horizon 2 Xbox saves (downloaded with XBsync) into Azimuth on PC: " +
+                Text = "Brings your Forza Horizon 3 PC (Microsoft Store) saves into Azimuth: " +
                        "profile, liveries, tuning setups, photos and garage thumbnails.",
                 AutoSize = true,
                 MaximumSize = new Size(860, 0),
@@ -115,7 +116,7 @@ namespace AzimuthSaveImporter.Gui
 
         Control BuildSourceGroup()
         {
-            var group = Group("1.  Xbox saves (downloaded with XBsync)");
+            var group = Group("1.  Forza Horizon 3 PC saves");
             var grid = Grid(3);
             _source.Dock = DockStyle.Fill;
             _source.Margin = new Padding(0, 4, 6, 4);
@@ -126,7 +127,8 @@ namespace AzimuthSaveImporter.Gui
             _source.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { RebuildPlan(); e.SuppressKeyPress = true; } };
             var folder = SmallButton("Folder...", (s, e) =>
             {
-                var path = PickFolder("Choose the folder XBsync downloaded the Forza Horizon 2 saves into.", _source.Text);
+                var path = PickFolder("Choose the Forza Horizon 3 PC save folder (the \"wgs\" folder), or a folder downloaded with XBsync.",
+                    _source.Text.Length > 0 ? _source.Text : XboxSource.DefaultPcSaveFolder);
                 if (path != null) { _source.Text = path; RebuildPlan(); }
             });
             var zip = SmallButton("ZIP...", (s, e) =>
@@ -140,7 +142,8 @@ namespace AzimuthSaveImporter.Gui
             grid.Controls.Add(_source, 0, 0);
             grid.Controls.Add(folder, 1, 0);
             grid.Controls.Add(zip, 2, 0);
-            var hint = Hint("In XBsync, sign in, pick Forza Horizon 2 and use \"Download all\" (folder) or \"Download ZIP\".");
+            var hint = Hint("Usually %LOCALAPPDATA%\\Packages\\Microsoft.OpusPG_8wekyb3d8bbwe\\SystemAppData\\wgs. " +
+                "Play FH3 on PC once so your cloud save is synced, then close it.");
             grid.Controls.Add(hint, 0, 1);
             grid.SetColumnSpan(hint, 3);
             group.Controls.Add(grid);

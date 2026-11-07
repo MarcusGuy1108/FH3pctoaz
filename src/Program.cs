@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Azimuth Save Importer")]
 [assembly: AssemblyProduct("Azimuth Save Importer")]
-[assembly: AssemblyDescription("Imports Forza Horizon 2 Xbox saves (downloaded with XBsync) into Azimuth.")]
+[assembly: AssemblyDescription("Imports Forza Horizon 3 PC (Microsoft Store) saves into Azimuth.")]
 [assembly: AssemblyCopyright("MIT License")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
