@@ -49,6 +49,18 @@ namespace AzimuthSaveImporter.Core
             return found;
         }
 
+        string _tempFolder;
+
+        bool TryReadWgs(string folder)
+        {
+            var wgs = FindWgsUserFolders(folder);
+            if (wgs.Count > 1)
+                throw new ImportException("This save has Forza Horizon 3 saves for more than one Xbox account. Choose one of these folders:\n  " +
+                    string.Join("\n  ", wgs));
+            if (wgs.Count == 1) ReadWgs(wgs[0]);
+            return wgs.Count == 1;
+        }
+
         void ReadWgs(string userFolder)
         {
             try

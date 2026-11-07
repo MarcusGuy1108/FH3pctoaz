@@ -83,6 +83,11 @@ out=$("${CLI[@]}" import --source "$WORK/pc" --target "$WORK/w" --dry-run 2>&1)
 "${CLI[@]}" import --source "$WORK/pc" --target "$WORK/w" --mode replace --yes --backup-dir "$WORK/w-backups" >/dev/null \
   && pass "exit code 0" || fail "exit code"
 "${REF[@]}" check "$WORK/xbox" "$WORK/w/$P" && pass "every container matches the Xbox bytes" || fail "containers"
+(cd "$WORK/pc" && python3 -I -m zipfile -c "$WORK/pc.zip" wgs)
+make_azimuth "$WORK/wz"
+"${CLI[@]}" import --source "$WORK/pc.zip" --target "$WORK/wz" --mode replace --yes --backup-dir "$WORK/wz-backups" >/dev/null \
+  && "${REF[@]}" check "$WORK/xbox" "$WORK/wz/$P" && pass "zipped PC save folder imports the same" || fail "zipped PC save"
+[[ -z $(ls -d "${TMPDIR:-/tmp}"/fh3-wgs-* 2>/dev/null) ]] && pass "extracted ZIP cleaned up" || fail "temp folder left behind"
 cp -r "$WORK/pc/wgs/000900000ABCDEF1_0000000000000000000000006E8F2F63" "$WORK/pc/wgs/000900000ABCDEF2_0000000000000000000000006E8F2F63"
 "${CLI[@]}" import --source "$WORK/pc" --target "$WORK/w" --dry-run >/dev/null 2>&1
 [[ $? -eq 1 ]] && pass "two Xbox accounts: asks to pick one" || fail "two accounts"

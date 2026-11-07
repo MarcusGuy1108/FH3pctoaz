@@ -99,11 +99,7 @@ namespace AzimuthSaveImporter.Core
 
         void ReadFolder()
         {
-            var wgs = FindWgsUserFolders(Path);
-            if (wgs.Count > 1)
-                throw new ImportException("This PC has Forza Horizon 3 saves for more than one Xbox account. Choose one of these folders:\n  " +
-                    string.Join("\n  ", wgs));
-            if (wgs.Count == 1) { ReadWgs(wgs[0]); return; }
+            if (TryReadWgs(Path)) return;
 
             var subfolders = Directory.GetDirectories(Path);
             if (subfolders.Any(d => Directory.Exists(System.IO.Path.Combine(d, SaveFormat.RevisionsFolder))))
@@ -149,6 +145,15 @@ namespace AzimuthSaveImporter.Core
         {
             IsZip = true;
             _zip = ZipFile.OpenRead(Path);
+            if (_zip.Entries.Any(e => e.Name.Equals(WgsIndexFile, StringComparison.OrdinalIgnoreCase)))
+            {
+                // A zipped PC save: blobs are found through containers.index, so read it from an extracted copy.
+                _zip.Dispose(); _zip = null;
+                _tempFolder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "fh3-wgs-" + Guid.NewGuid().ToString("N"));
+                ZipFile.ExtractToDirectory(Path, _tempFolder);
+                TryReadWgs(_tempFolder);
+                return;
+            }
             var byFolder = new Dictionary<string, SourceContainer>(StringComparer.Ordinal);
             var fileName = System.IO.Path.GetFileNameWithoutExtension(Path);
             foreach (var entry in _zip.Entries)
@@ -228,6 +233,7 @@ namespace AzimuthSaveImporter.Core
         public void Dispose()
         {
             if (_zip != null) { _zip.Dispose(); _zip = null; }
+            if (_tempFolder != null) { try { Directory.Delete(_tempFolder, true); } catch (IOException) { } _tempFolder = null; }
         }
     }
 

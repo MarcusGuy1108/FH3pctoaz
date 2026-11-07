@@ -133,7 +133,7 @@ namespace AzimuthSaveImporter.Gui
             });
             var zip = SmallButton("ZIP...", (s, e) =>
             {
-                using (var dialog = new OpenFileDialog { Filter = "XBsync ZIP (*.zip)|*.zip", Title = "Choose the ZIP downloaded with XBsync" })
+                using (var dialog = new OpenFileDialog { Filter = "ZIP (*.zip)|*.zip", Title = "Choose a zipped FH3 PC save folder or an XBsync ZIP" })
                 {
                     if (File.Exists(_source.Text)) dialog.InitialDirectory = Path.GetDirectoryName(_source.Text);
                     if (dialog.ShowDialog(this) == DialogResult.OK) { _source.Text = dialog.FileName; RebuildPlan(); }
