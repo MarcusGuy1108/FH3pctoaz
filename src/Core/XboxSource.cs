@@ -222,6 +222,7 @@ namespace AzimuthSaveImporter.Core
             {
                 case "user": return "Profile";
                 case "livery": return "Livery";
+                case "baselivery": return "Base livery";
                 case "soulboundlivery": return "Bound livery";
                 case "garagethumbnail": return "Garage thumbnail";
                 case "tuning": return "Tuning setup";
